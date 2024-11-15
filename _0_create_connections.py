@@ -61,6 +61,8 @@ for iteration in range(1000):
 
     # print(result_connections)
 
+    # TODO instead of going to a random point based or the error better generate 100 instances and then go to the best one (deciding by the error). but without feedback multiplication, the step calc he  does himself
+
     # Calculate new random target
     new_random_target = torch.rand_like(result_connections)
     new_random_target = result_connections * feedback + new_random_target * (1 - feedback) # the worse the more significant move
