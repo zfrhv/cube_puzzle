@@ -1,86 +1,138 @@
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import numpy as np
+from torch.distributions import Categorical
+
 from _1_create_tetris_parts import merge_cubes,convert_parts_2d
 from _2_verify_second_shape import inspect_parts
 from _5_create_meshes import create_meshes
 
-import torch
-import torch.nn as nn
-import torch.optim as optim
+# TODO use cuda instead of cpu
 
 # Values from 0 to 1
 fun_meter = 1.0 # the more varaity of shapes the more fun it is (many same shapes is boring)
 _2d_difficulty_meter = 1.0 # the harder to assembly the shape 8x8 the harder it is
 _3d_difficulty_meter = 1.0 # the harder to assembly the shape 4x4x4 the harder it is
 
-# Connect the cubes
-
-class PiecesGenerator(nn.Module):
+# Define the Policy Network
+class PolicyNetwork(nn.Module):
     def __init__(self):
-        super(PiecesGenerator, self).__init__()
-        self.fc1 = nn.Linear(3, 144)
-        self.fc2 = nn.Linear(144, 144)
-        self.fc3 = nn.Linear(144, 144)
+        super(PolicyNetwork, self).__init__()
+        self.fc = nn.Sequential(
+            nn.Linear(144, 144),
+            nn.ReLU(),
+            nn.Linear(144, 144),
+            nn.Softmax(dim=-1)
+        )
 
     def forward(self, x):
-        x = torch.relu(self.fc1(x))
-        x = torch.relu(self.fc2(x))
-        return torch.sigmoid(self.fc3(x))  # Sigmoid to get output between 0 and 1 for connections
+        return self.fc(x)
 
-# Initialize the model, optimizer, and latent space
-pieces_generator = PiecesGenerator()
-optimizer = optim.Adam(pieces_generator.parameters(), lr=0.001)
+# Define the Value Network
+class ValueNetwork(nn.Module):
+    def __init__(self):
+        super(ValueNetwork, self).__init__()
+        self.fc = nn.Sequential(
+            nn.Linear(144, 144),
+            nn.ReLU(),
+            nn.Linear(144, 1)
+        )
 
+    def forward(self, x):
+        return self.fc(x)
+
+# PPO Hyperparameters
+lr = 3e-4
+gamma = 0.99
+eps_clip = 0.2
+
+policy = PolicyNetwork()
+value = ValueNetwork()
+policy_optimizer = optim.Adam(policy.parameters(), lr=lr)
+value_optimizer = optim.Adam(value.parameters(), lr=lr)
+
+def generate_connections():
+    """Generates a random onnections as a flat tensor."""
+    return torch.randint(0, 2, (144,), dtype=torch.float)
+
+def ppo_update(states, actions, rewards):
+    # Compute advantages
+    states = torch.stack(states)
+    actions = torch.stack(actions)
+    rewards = torch.tensor(rewards, dtype=torch.float)
+    
+    # Compute old action probabilities
+    old_probs = policy(states).gather(1, actions.unsqueeze(1)).squeeze()
+
+    # Calculate returns and advantages
+    returns = []
+    G = 0
+    for reward in reversed(rewards):
+        G = reward + gamma * G
+        returns.insert(0, G)
+    returns = torch.tensor(returns, dtype=torch.float)
+    advantages = returns - value(states).squeeze()
+
+    # Compute new probabilities and ratio
+    probs = policy(states).gather(1, actions.unsqueeze(1)).squeeze()
+    ratio = probs / (old_probs + 1e-10)
+
+    # Compute loss using the PPO clipped objective
+    surr1 = ratio * advantages
+    surr2 = torch.clamp(ratio, 1 - eps_clip, 1 + eps_clip) * advantages
+    policy_loss = -torch.min(surr1, surr2).mean()
+
+    # Optimize the policy
+    policy_optimizer.zero_grad()
+    policy_loss.backward()
+    policy_optimizer.step()
+
+    # Value loss
+    value_loss = nn.MSELoss()(value(states).squeeze(), returns.squeeze())
+    value_optimizer.zero_grad()
+    value_loss.backward()
+    value_optimizer.step()
+
+# Training Loop
 tetris_parts = None
+for episode in range(1000):
+    result_connections = state = generate_connections()
+    action_probs = policy(state)
+    action_dist = Categorical(action_probs)
+    action = action_dist.sample()
 
-last_feedback = 0
+    reward = 0
 
-
-# Training loop
-for iteration in range(1000):
-    result_connections = pieces_generator(torch.tensor([fun_meter, _2d_difficulty_meter, _3d_difficulty_meter]))
-
-    feedback = 1.0
-
-    tetris_parts = merge_cubes(result_connections.view(3, 3, 4, 4) >= 0.5)
-    num_of_parts = len(tetris_parts)
-    tetris_parts = convert_parts_2d(tetris_parts)
+    # print(result_connections.view(3, 3, 4, 4))
+    tetris_parts = merge_cubes(result_connections.view(3, 3, 4, 4) == 1)
+    # print("________________")
+    # print(len(tetris_parts))
+    tetris_parts_2d = convert_parts_2d(tetris_parts)
 
     # if int then not all parts 2d
-    if isinstance(tetris_parts, int):
-        feedback = tetris_parts / num_of_parts
-        print("0", feedback)
+    if len(tetris_parts) != len(tetris_parts_2d):
+        # put bad grade on all bad parts
+        reward += len(tetris_parts) + 2*len(tetris_parts_2d)
+        # if reward > 30:
+        #     print(tetris_parts_2d)
+        #     print(tetris_parts)
+        #     exit()
     else:
-        sorted_parts = inspect_parts(tetris_parts)
+        reward += 100
+        print("================")
+        print(tetris_parts_2d)
+        sorted_parts = inspect_parts(tetris_parts_2d)
         for part in sorted_parts:
             # less repeast is more fun (total number of cubes is 64)
             # bigger part size is more fun (max size part 4x4=16)
-            feedback = feedback * (1 - part["repeats"]/64) * part["size"] / 16
-        # give it the minimum
-        feedback = feedback + 0.1 * (1 - feedback)
-        print("1", feedback)
+            reward += part["size"]/part["repeats"]
+    print(reward)
 
-    # print(result_connections)
+    # Collect data for PPO update
+    ppo_update([state], [action], [reward])
 
-    # TODO need PPO approach
-
-    # Calculate new random target
-    new_random_target = torch.rand_like(result_connections)
-    new_random_target = result_connections * feedback + new_random_target * (1 - feedback) # the worse the more significant move
-    loss = nn.BCEWithLogitsLoss()(result_connections, new_random_target)
-
-    # Backpropagation and optimizer step
-    optimizer.zero_grad()
-    loss.backward()
-    optimizer.step()
-
-    # optimizer.zero_grad()
-    # if feedback >= last_feedback:
-    #     loss.backward()
-    #     optimizer.step()
-    #     # reset_optimizer_state(optimizer)
-    # last_feedback = feedback
-
-if tetris_parts:
-    create_meshes(tetris_parts)
-    print("finished meshing all parts")
+if len(tetris_parts) != len(tetris_parts_2d):
+    print("cant create meshes cuz not good parts")
 else:
-    print("the parts are not good enough to mesh them")
+    create_meshes(tetris_parts_2d)

@@ -166,7 +166,4 @@ def convert_parts_2d(parts):
 
         all_2d = False
 
-    if all_2d:
-        return new_parts
-    else:
-        return len(new_parts)
+    return new_parts
