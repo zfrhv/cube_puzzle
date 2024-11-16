@@ -46,7 +46,7 @@ class ValueNetwork(nn.Module):
 lr = 3e-4
 gamma = 0.99
 eps_clip = 0.2
-epochs = 10
+epochs = 1
 
 policy = PolicyNetwork()
 value = ValueNetwork()
