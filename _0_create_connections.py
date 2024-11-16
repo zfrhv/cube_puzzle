@@ -52,10 +52,6 @@ value = ValueNetwork()
 policy_optimizer = optim.Adam(policy.parameters(), lr=lr)
 value_optimizer = optim.Adam(value.parameters(), lr=lr)
 
-def generate_connections():
-    """Generates a random onnections as a flat tensor."""
-    return torch.randint(0, 2, (144,), dtype=torch.float)
-
 def ppo_update(states, actions, rewards):
     # Compute advantages
     states = torch.stack(states)
@@ -96,43 +92,42 @@ def ppo_update(states, actions, rewards):
 
 # Training Loop
 tetris_parts = None
-for episode in range(1000):
-    result_connections = state = generate_connections()
+epoch = 1000
+for episode in range(100):
+    # start from zeroes, its easier to find matches
+    result_connections = state = torch.zeros(144, dtype=torch.float)
     action_probs = policy(state)
     action_dist = Categorical(action_probs)
     action = action_dist.sample()
 
-    reward = 0
+    # TODO episode resets puzzle from 0, epoch moves next step, but the state is not updating? where is the keep moving progress?
 
-    # print(result_connections.view(3, 3, 4, 4))
-    tetris_parts = merge_cubes(result_connections.view(3, 3, 4, 4) == 1)
-    # print("________________")
-    # print(len(tetris_parts))
-    tetris_parts_2d = convert_parts_2d(tetris_parts)
+    for _ in range(epoch):
+        reward = 0
 
-    # if int then not all parts 2d
-    if len(tetris_parts) != len(tetris_parts_2d):
-        # put bad grade on all bad parts
-        reward += len(tetris_parts) + 2*len(tetris_parts_2d)
-        # if reward > 30:
-        #     print(tetris_parts_2d)
-        #     print(tetris_parts)
-        #     exit()
-    else:
-        reward += 100
-        print("================")
-        print(tetris_parts_2d)
-        sorted_parts = inspect_parts(tetris_parts_2d)
-        for part in sorted_parts:
-            # less repeast is more fun (total number of cubes is 64)
-            # bigger part size is more fun (max size part 4x4=16)
-            reward += part["size"]/part["repeats"]
-    print(reward)
+        result_connections = state
 
-    # Collect data for PPO update
-    ppo_update([state], [action], [reward])
+        tetris_parts = merge_cubes(result_connections.view(3, 3, 4, 4) == 1)
+        tetris_parts_2d = convert_parts_2d(tetris_parts)
 
-if len(tetris_parts) != len(tetris_parts_2d):
+        # if int then not all parts 2d
+        if len(tetris_parts) != len(tetris_parts_2d):
+            # put bad grade on all bad parts
+            reward += -10 * (len(tetris_parts) - len(tetris_parts_2d))
+        else:
+            sorted_parts = inspect_parts(tetris_parts_2d)
+            for part in sorted_parts:
+                # less repeast is more fun (total number of cubes is 64)
+                # bigger part size is more fun (max size part 4x4=16)
+                reward += part["size"]/part["repeats"]
+        print(reward)
+
+        print(state)
+
+        # Collect data for PPO update
+        ppo_update([state], [action], [reward])
+
+if len(tetris_parts) != len(tetris_parts_2d) or len(tetris_parts_2d) == 0:
     print("cant create meshes cuz not good parts")
 else:
     create_meshes(tetris_parts_2d)
