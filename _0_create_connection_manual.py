@@ -117,7 +117,7 @@ def connect_cubes(connections, is_checked, cube_pos, part_length, part_axis):
 
 best_parts = None
 best_reward = 0
-for _ in range(1):
+for _ in range(10):
     connections = np.full((3, 3, 4, 4), False)
 
     reward = 0
