@@ -10,8 +10,8 @@ _2d_difficulty_meter = 1.0 # the harder to assembly the shape 8x8 the harder it 
 _3d_difficulty_meter = 1.0 # the harder to assembly the shape 4x4x4 the harder it is
 
 # how often to have connections from 0 to 1 (1 = always make connections, 0 means never), more connections more longer parts
-often_connect = 0.1
-part_length = 12
+often_connect = 0.5
+part_length = 5
 def connect_cubes(connections, is_checked, cube_pos, part_length, part_axis):
         cc = connection_cords['up'](*cube_pos)
         if cc and (2 in part_axis or len(part_axis) < 2):
@@ -132,12 +132,9 @@ for _ in range(10):
                     is_checked[x][y][z] = True
                     part_axis = []
                     connect_cubes(connections, is_checked, [x,y,z], part_length, part_axis)
-                    print(part_axis)
 
     tetris_parts = merge_cubes(connections)
     tetris_parts_2d = convert_parts_2d(tetris_parts)
-
-    print(len(tetris_parts_2d), len(tetris_parts))
 
     sorted_parts = inspect_parts(tetris_parts_2d)
     for part in sorted_parts:
@@ -148,7 +145,5 @@ for _ in range(10):
     if reward > best_reward:
         best_parts = tetris_parts_2d
         best_reward = reward
-
-    # print(sorted_parts)
 
 create_meshes(best_parts)

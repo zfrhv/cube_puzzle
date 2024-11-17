@@ -5,8 +5,8 @@ def create_meshes(tetris_parts):
     mesh_parts = []
     for index, part in enumerate(tetris_parts):
         mesh_part = None
-        for x in range(4):
-            for y in range(4):
+        for x in range(len(part)):
+            for y in range(len(part[x])):
                 if part[x][y]:
                     if not mesh_part:
                         mesh_part = trimesh.creation.box(extents=[1, 1, 1])
