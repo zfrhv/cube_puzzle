@@ -86,13 +86,7 @@ def merge_next_cubes(connections, is_checked, part, part_pos, cube_pos, part_axi
 
 # connections 3x3x4x4 arrays
 def merge_cubes(connections):
-    is_checked = []
-    for x in range(4):
-        is_checked.append([])
-        for y in range(4):
-            is_checked[x].append([])
-            for z in range(4):
-                is_checked[x][y].append(False)
+    is_checked = np.full((4, 4, 4), False)
 
     parts = []
     for x in range(4):
