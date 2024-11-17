@@ -10,11 +10,9 @@ _2d_difficulty_meter = 1.0 # the harder to assembly the shape 8x8 the harder it 
 _3d_difficulty_meter = 1.0 # the harder to assembly the shape 4x4x4 the harder it is
 
 # how often to have connections from 0 to 1 (1 = always make connections, 0 means never), more connections more longer parts
-often_connect = 0.01
+often_connect = 0.1
+part_length = 12
 def connect_cubes(connections, is_checked, cube_pos, part_length, part_axis):
-    if is_checked[cube_pos[0]][cube_pos[1]][cube_pos[2]] == False:
-        is_checked[cube_pos[0]][cube_pos[1]][cube_pos[2]] == True
-
         cc = connection_cords['up'](*cube_pos)
         if cc and (2 in part_axis or len(part_axis) < 2):
             neighbor_pos = [cube_pos[0], cube_pos[1], cube_pos[2]+1]
@@ -28,8 +26,9 @@ def connect_cubes(connections, is_checked, cube_pos, part_length, part_axis):
                 if will_connect:
                     if 2 not in part_axis:
                         part_axis.append(2)
-                    if connect_cubes(connections, is_checked, neighbor_pos, part_length, part_axis):
-                        connections[cc[0]][cc[1]][cc[2]][cc[3]] = True
+                    connections[cc[0]][cc[1]][cc[2]][cc[3]] = True
+                    is_checked[neighbor_pos[0]][neighbor_pos[1]][neighbor_pos[2]] = True
+                    connect_cubes(connections, is_checked, neighbor_pos, part_length, part_axis)
 
         cc = connection_cords['down'](*cube_pos)
         if cc and (2 in part_axis or len(part_axis) < 2):
@@ -44,8 +43,9 @@ def connect_cubes(connections, is_checked, cube_pos, part_length, part_axis):
                 if will_connect:
                     if 2 not in part_axis:
                         part_axis.append(2)
-                    if connect_cubes(connections, is_checked, neighbor_pos, part_length, part_axis):
-                        connections[cc[0]][cc[1]][cc[2]][cc[3]] = True
+                    connections[cc[0]][cc[1]][cc[2]][cc[3]] = True
+                    is_checked[neighbor_pos[0]][neighbor_pos[1]][neighbor_pos[2]] = True
+                    connect_cubes(connections, is_checked, neighbor_pos, part_length, part_axis)
 
         cc = connection_cords['front'](*cube_pos)
         if cc and (0 in part_axis or len(part_axis) < 2):
@@ -60,8 +60,9 @@ def connect_cubes(connections, is_checked, cube_pos, part_length, part_axis):
                 if will_connect:
                     if 0 not in part_axis:
                         part_axis.append(0)
-                    if connect_cubes(connections, is_checked, neighbor_pos, part_length, part_axis):
-                        connections[cc[0]][cc[1]][cc[2]][cc[3]] = True
+                    connections[cc[0]][cc[1]][cc[2]][cc[3]] = True
+                    is_checked[neighbor_pos[0]][neighbor_pos[1]][neighbor_pos[2]] = True
+                    connect_cubes(connections, is_checked, neighbor_pos, part_length, part_axis)
 
         cc = connection_cords['back'](*cube_pos)
         if cc and (0 in part_axis or len(part_axis) < 2):
@@ -76,8 +77,9 @@ def connect_cubes(connections, is_checked, cube_pos, part_length, part_axis):
                 if will_connect:
                     if 0 not in part_axis:
                         part_axis.append(0)
-                    if connect_cubes(connections, is_checked, neighbor_pos, part_length, part_axis):
-                        connections[cc[0]][cc[1]][cc[2]][cc[3]] = True
+                    connections[cc[0]][cc[1]][cc[2]][cc[3]] = True
+                    is_checked[neighbor_pos[0]][neighbor_pos[1]][neighbor_pos[2]] = True
+                    connect_cubes(connections, is_checked, neighbor_pos, part_length, part_axis)
 
         cc = connection_cords['right'](*cube_pos)
         if cc and (1 in part_axis or len(part_axis) < 2):
@@ -92,8 +94,9 @@ def connect_cubes(connections, is_checked, cube_pos, part_length, part_axis):
                 if will_connect:
                     if 1 not in part_axis:
                         part_axis.append(1)
-                    if connect_cubes(connections, is_checked, neighbor_pos, part_length, part_axis):
-                        connections[cc[0]][cc[1]][cc[2]][cc[3]] = True
+                    connections[cc[0]][cc[1]][cc[2]][cc[3]] = True
+                    is_checked[neighbor_pos[0]][neighbor_pos[1]][neighbor_pos[2]] = True
+                    connect_cubes(connections, is_checked, neighbor_pos, part_length, part_axis)
 
         cc = connection_cords['left'](*cube_pos)
         if cc and (1 in part_axis or len(part_axis) < 2):
@@ -108,12 +111,9 @@ def connect_cubes(connections, is_checked, cube_pos, part_length, part_axis):
                 if will_connect:
                     if 1 not in part_axis:
                         part_axis.append(1)
-                    if connect_cubes(connections, is_checked, neighbor_pos, part_length, part_axis):
-                        connections[cc[0]][cc[1]][cc[2]][cc[3]] = True
-
-        return True
-    else:
-        return False
+                    connections[cc[0]][cc[1]][cc[2]][cc[3]] = True
+                    is_checked[neighbor_pos[0]][neighbor_pos[1]][neighbor_pos[2]] = True
+                    connect_cubes(connections, is_checked, neighbor_pos, part_length, part_axis)
 
 best_parts = None
 best_reward = 0
@@ -129,7 +129,10 @@ for _ in range(1):
         for y in range(4):
             for z in range(4):
                 if is_checked[x][y][z] == False:
-                    connect_cubes(connections, is_checked, [x,y,z], 12, [])
+                    is_checked[x][y][z] = True
+                    part_axis = []
+                    connect_cubes(connections, is_checked, [x,y,z], part_length, part_axis)
+                    print(part_axis)
 
     tetris_parts = merge_cubes(connections)
     tetris_parts_2d = convert_parts_2d(tetris_parts)

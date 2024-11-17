@@ -123,41 +123,35 @@ def merge_cubes(connections):
 
 def convert_parts_2d(parts):
     new_parts = []
-    all_2d = True
     for part in parts:
-
-        not_empty_2d_matrix = 0
-        last_2d_matrix = 0
-        for index, matrix_2d in enumerate(part):
-            if not np.all(matrix_2d == False):
-                not_empty_2d_matrix += 1
-                last_2d_matrix = index
-        if not_empty_2d_matrix <= 1:
-            new_parts.append(part[last_2d_matrix])
-            continue
-        
-        part = np.transpose(part, (1, 2, 0))
-        not_empty_2d_matrix = 0
-        last_2d_matrix = 0
-        for index, matrix_2d in enumerate(part):
-            if not np.all(matrix_2d == False):
-                not_empty_2d_matrix += 1
-                last_2d_matrix = index
-        if not_empty_2d_matrix <= 1:
-            new_parts.append(part[last_2d_matrix])
+        # Check along the x-axis
+        planes_with_values = 0
+        last_plane_index = 0
+        for i in range(part.shape[0]):
+            if np.any(part[i]):
+                planes_with_values += 1
+        if planes_with_values <= 1:
+            new_parts.append(part[last_plane_index])
             continue
 
-        part = np.transpose(part, (2, 0, 1))
-        not_empty_2d_matrix = 0
-        last_2d_matrix = 0
-        for index, matrix_2d in enumerate(part):
-            if not np.all(matrix_2d == False):
-                not_empty_2d_matrix += 1
-                last_2d_matrix = index
-        if not_empty_2d_matrix <= 1:
-            new_parts.append(part[last_2d_matrix])
+        # Check along the y-axis
+        planes_with_values = 0
+        last_plane_index = 0
+        for i in range(part.shape[1]):
+            if np.any(part[:, i]):
+                planes_with_values += 1
+        if planes_with_values <= 1:
+            new_parts.append(part[:, last_plane_index])
             continue
 
-        all_2d = False
+        # Check along the z-axis
+        planes_with_values = 0
+        last_plane_index = 0
+        for i in range(part.shape[2]):
+            if np.any(part[:, :, i]):
+                planes_with_values += 1
+        if planes_with_values <= 1:
+            new_parts.append(part[:, :, last_plane_index])
+            continue
 
     return new_parts
