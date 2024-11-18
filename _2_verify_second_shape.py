@@ -7,18 +7,35 @@ import numpy as np
 # its not super efficient but at least no need to rerun 1000 times
 
 def inspect_parts(parts):
-    counter = Counter([tuple(map(tuple, part)) for part in parts])
+    sorted_parts = []
+    for part in parts:
+        found_match = False
+        for sorted_part in sorted_parts:
+            if compare_parts(sorted_part['matrix'], part):
+                sorted_part['repeats'] += 1
+                found_match = True
+                break
+        if not found_match:
+            sorted_parts.append({
+                "repeats": 1,
+                "matrix": part,
+                "size": np.count_nonzero(part)
+            })
 
-    return [
-        {
-            "repeats": count,
-            "matrix": np.array(part),
-            "size": np.count_nonzero(np.array(part))
-        }
-        for part, count in counter.items()
-    ]
+    return sorted_parts
 
+def compare_parts(part1, part2):
+    # flip the part
+    for _ in range(2):
+        # rotate the part
+        for _ in range(4):
+            if np.array_equal(part1, part2):
+                return True
+            part2 = np.rot90(part2)
+        part2 = part2[::-1, :]
+    return False
 
+# TODO use more numpy
 def solve_8x8(plane, parts, pos):
     next_pos = pos.copy()
     next_pos[0] += 1
