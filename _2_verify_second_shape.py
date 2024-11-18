@@ -17,3 +17,8 @@ def inspect_parts(parts):
         }
         for part, count in counter.items()
     ]
+
+plane = np.zeros((8, 8), dtype=bool)
+def solve_8x8(parts):
+    return 1
+    
