@@ -50,8 +50,9 @@ def attempt_connect(direction, connections, is_checked, cube_pos, part_length, p
                 connect_cubes(connections, is_checked, neighbor_pos, part_length, part_axis)
 
 best_parts = None
+best_sorted = None
 best_reward = 0
-for _ in range(1):
+for _ in range(1000):
     connections = np.full((3, 3, 4, 4), False)
 
     reward = 0
@@ -71,17 +72,25 @@ for _ in range(1):
     tetris_parts_2d = convert_parts_2d(tetris_parts)
 
     sorted_parts = inspect_parts(tetris_parts_2d)
-    if solve_8x8(np.zeros((8, 8)), sorted_parts, [0,0]):
-        for part in sorted_parts:
-            # less repeast is more fun (total number of cubes is 64)
-            # bigger part size is more fun (max size part 4x4=16)
-            reward += part["size"]/part["repeats"]
-    else:
-        reward += -100
+    for part in sorted_parts:
+        # less repeast is more fun (total number of cubes is 64)
+        # bigger part size is more fun (max size part 4x4=16)
+        reward += part["size"]/part["repeats"]
+        if part["size"] == 1:
+            reward -= 20*part["repeats"]
+        if part["size"] == 2:
+            reward -= 10*part["repeats"]
+        if part["size"] == 3:
+            reward -= 5*part["repeats"]
 
     if reward > best_reward:
         best_parts = tetris_parts_2d
+        best_sorted = sorted_parts
         best_reward = reward
 
 print("best reward: " + str(best_reward))
+if solve_8x8(np.zeros((8, 8)), best_sorted, [0,0]):
+    print("and its solvable!!")
+else:
+    print("nah")
 create_meshes(best_parts)
