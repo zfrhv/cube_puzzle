@@ -12,13 +12,60 @@ def inspect_parts(parts):
     return [
         {
             "repeats": count,
-            "part": np.array(part),
+            "matrix": np.array(part),
             "size": np.count_nonzero(np.array(part))
         }
         for part, count in counter.items()
     ]
 
-plane = np.zeros((8, 8), dtype=bool)
-def solve_8x8(parts):
-    return 1
-    
+
+def solve_8x8(plane, parts, pos):
+    next_pos = pos.copy()
+    next_pos[0] += 1
+    if next_pos[0] >= plane.shape[0]:
+        next_pos[0] = 0
+        next_pos[1] += 1
+    if next_pos[1] >= plane.shape[1]:
+        return True
+
+    if plane[pos[0]][pos[1]] == 1: # current pos already filled
+        # solve next
+        return solve_8x8(plane, parts, next_pos)
+    else:
+        for part in parts:
+            # remove the part from parts
+            part['repeats'] += -1
+            if part['repeats'] == 0:
+                parts.remove(part)
+
+            part_shape = part['matrix']
+            # flip the shape (2 times)
+            for _ in range(2):
+                # rotate the shape (4 times)
+                for _ in range(4):
+                    # try shape in all positions
+                    for x_shift in range(part_shape.shape[0]):
+                        for y_shift in range(part_shape.shape[1]):
+                            shifted_pos = np.add(pos, [-x_shift, -y_shift])
+                            # if piece in plane bounds
+                            if shifted_pos[0] >= 0 and shifted_pos[1] >= 0 and shifted_pos[0] + part_shape.shape[0] <= plane.shape[0] and shifted_pos[1] + part_shape.shape[1] <= plane.shape[1]:
+                                combo_result = part_shape + plane[shifted_pos[0] : shifted_pos[0] + part_shape.shape[0], shifted_pos[1] : shifted_pos[1] + part_shape.shape[1]]
+                                if np.max(combo_result) < 2:
+                                    plane[shifted_pos[0] : shifted_pos[0] + part_shape.shape[0], shifted_pos[1] : shifted_pos[1] + part_shape.shape[1]] += part_shape
+                                    succeeded = solve_8x8(plane, parts, next_pos)
+                                    if succeeded:
+                                        # put back the part and quit
+                                        part['repeats'] += 1
+                                        if part['repeats'] == 1:
+                                            parts.append(part)
+                                        return True
+                                    else:
+                                        plane[shifted_pos[0] : shifted_pos[0] + part_shape.shape[0], shifted_pos[1] : shifted_pos[1] + part_shape.shape[1]] -= part_shape
+                    part_shape = np.rot90(part_shape)
+                part_shape = part_shape[::-1, :]
+
+            # put back the part
+            part['repeats'] += 1
+            if part['repeats'] == 1:
+                parts.append(part)
+    return False

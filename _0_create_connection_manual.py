@@ -1,7 +1,7 @@
 import numpy as np
 
 from _1_create_tetris_parts import merge_cubes,convert_parts_2d,connection_cords,point_cords,at
-from _2_verify_second_shape import inspect_parts
+from _2_verify_second_shape import inspect_parts,solve_8x8
 from _5_create_meshes import create_meshes
 
 # Values from 0 to 1
@@ -51,7 +51,7 @@ def attempt_connect(direction, connections, is_checked, cube_pos, part_length, p
 
 best_parts = None
 best_reward = 0
-for _ in range(10):
+for _ in range(1):
     connections = np.full((3, 3, 4, 4), False)
 
     reward = 0
@@ -71,13 +71,17 @@ for _ in range(10):
     tetris_parts_2d = convert_parts_2d(tetris_parts)
 
     sorted_parts = inspect_parts(tetris_parts_2d)
-    for part in sorted_parts:
-        # less repeast is more fun (total number of cubes is 64)
-        # bigger part size is more fun (max size part 4x4=16)
-        reward += part["size"]/part["repeats"]
+    if solve_8x8(np.zeros((8, 8)), sorted_parts, [0,0]):
+        for part in sorted_parts:
+            # less repeast is more fun (total number of cubes is 64)
+            # bigger part size is more fun (max size part 4x4=16)
+            reward += part["size"]/part["repeats"]
+    else:
+        reward += -100
 
     if reward > best_reward:
         best_parts = tetris_parts_2d
         best_reward = reward
 
+print("best reward: " + str(best_reward))
 create_meshes(best_parts)
