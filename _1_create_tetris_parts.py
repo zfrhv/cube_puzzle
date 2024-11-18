@@ -7,15 +7,24 @@ def at(obj, index_arr):
         obj = obj[key]
     return obj
 
+point_cords = {
+    'up':    lambda x,y,z: None if z >= 3 else [x, y, z+1],
+    'down':  lambda x,y,z: None if z <= 0 else [x, y, z-1],
+    'front': lambda x,y,z: None if x >= 3 else [x+1, y, z],
+    'back':  lambda x,y,z: None if x <= 0 else [x-1, y, z],
+    'right': lambda x,y,z: None if y >= 3 else [x, y+1, z],
+    'left':  lambda x,y,z: None if y <= 0 else [x, y-1, z],
+}
+
 # connections_x = 3d array of 3 x planes, 4 rows, 4 connection (val >= 0 yes connected otherwise not connected)
 # connections_y and connections_z are the same.
 connection_cords = {
-    'up':        lambda x,y,z: None if z >= 3 else [2, z, x, y],
-    'down':    lambda x,y,z: None if z <= 0 else [2, z-1, x, y],
+    'up':    lambda x,y,z: None if z >= 3 else [2, z, x, y],
+    'down':  lambda x,y,z: None if z <= 0 else [2, z-1, x, y],
     'front': lambda x,y,z: None if x >= 3 else [0, x, y, z],
-    'back':    lambda x,y,z: None if x <= 0 else [0, x-1, y, z],
+    'back':  lambda x,y,z: None if x <= 0 else [0, x-1, y, z],
     'right': lambda x,y,z: None if y >= 3 else [1, y, z, x],
-    'left':    lambda x,y,z: None if y <= 0 else [1, y-1, z, x],
+    'left':  lambda x,y,z: None if y <= 0 else [1, y-1, z, x],
 }
 
 # TODO accept 3d parts as well and then not only i can make square but also other shapes like a pyramid, castle, or other shape that will hold itself...
@@ -32,7 +41,7 @@ def merge_next_cubes(connections, is_checked, part, part_pos, cube_pos, part_axi
         if cc and at(connections, cc):
             if 2 not in part_axis:
                 part_axis.append(2)
-            neighbor_pos = [cube_pos[0], cube_pos[1], cube_pos[2]+1]
+            neighbor_pos = point_cords['up'](*cube_pos)
             new_pos = [part_pos[0], part_pos[1], part_pos[2]]
             new_pos[part_axis.index(2)] += 1
             part, part_axis = merge_next_cubes(connections, is_checked, part, new_pos, neighbor_pos, part_axis)
@@ -41,7 +50,7 @@ def merge_next_cubes(connections, is_checked, part, part_pos, cube_pos, part_axi
         if cc and at(connections, cc):
             if 2 not in part_axis:
                 part_axis.append(2)
-            neighbor_pos = [cube_pos[0], cube_pos[1], cube_pos[2]-1]
+            neighbor_pos = point_cords['down'](*cube_pos)
             new_pos = [part_pos[0], part_pos[1], part_pos[2]]
             new_pos[part_axis.index(2)] += -1
             part, part_axis = merge_next_cubes(connections, is_checked, part, new_pos, neighbor_pos, part_axis)
@@ -50,7 +59,7 @@ def merge_next_cubes(connections, is_checked, part, part_pos, cube_pos, part_axi
         if cc and at(connections, cc):
             if 0 not in part_axis:
                 part_axis.append(0)
-            neighbor_pos = [cube_pos[0]+1, cube_pos[1], cube_pos[2]]
+            neighbor_pos = point_cords['front'](*cube_pos)
             new_pos = [part_pos[0], part_pos[1], part_pos[2]]
             new_pos[part_axis.index(0)] += 1
             part, part_axis = merge_next_cubes(connections, is_checked, part, new_pos, neighbor_pos, part_axis)
@@ -59,7 +68,7 @@ def merge_next_cubes(connections, is_checked, part, part_pos, cube_pos, part_axi
         if cc and at(connections, cc):
             if 0 not in part_axis:
                 part_axis.append(0)
-            neighbor_pos = [cube_pos[0]-1, cube_pos[1], cube_pos[2]]
+            neighbor_pos = point_cords['back'](*cube_pos)
             new_pos = [part_pos[0], part_pos[1], part_pos[2]]
             new_pos[part_axis.index(0)] += -1
             part, part_axis = merge_next_cubes(connections, is_checked, part, new_pos, neighbor_pos, part_axis)
@@ -68,7 +77,7 @@ def merge_next_cubes(connections, is_checked, part, part_pos, cube_pos, part_axi
         if cc and at(connections, cc):
             if 1 not in part_axis:
                 part_axis.append(1)
-            neighbor_pos = [cube_pos[0], cube_pos[1]+1, cube_pos[2]]
+            neighbor_pos = point_cords['right'](*cube_pos)
             new_pos = [part_pos[0], part_pos[1], part_pos[2]]
             new_pos[part_axis.index(1)] += 1
             part, part_axis = merge_next_cubes(connections, is_checked, part, new_pos, neighbor_pos, part_axis)
@@ -77,7 +86,7 @@ def merge_next_cubes(connections, is_checked, part, part_pos, cube_pos, part_axi
         if cc and at(connections, cc):
             if 1 not in part_axis:
                 part_axis.append(1)
-            neighbor_pos = [cube_pos[0], cube_pos[1]-1, cube_pos[2]]
+            neighbor_pos = point_cords['left'](*cube_pos)
             new_pos = [part_pos[0], part_pos[1], part_pos[2]]
             new_pos[part_axis.index(1)] += -1
             part, part_axis = merge_next_cubes(connections, is_checked, part, new_pos, neighbor_pos, part_axis)
