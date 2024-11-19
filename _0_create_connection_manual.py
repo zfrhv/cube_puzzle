@@ -4,6 +4,48 @@ from _1_create_tetris_parts import merge_cubes,convert_parts_2d,connection_cords
 from _2_verify_second_shape import inspect_parts,solve_8x8
 from _5_create_meshes import create_meshes
 
+# possible shapes:
+# cube
+# pyramid
+# stairs (Penrose stairs?)
+# 2d flat shapes (anything):
+#   cat
+#   fish
+#   bird
+#   Heart
+#   star
+#   diamond
+#   house
+#   key
+#   shiba?
+
+# 4x4x4 cube (sum 64)
+# pyramid 4/5 layers (sum 35/84)
+# heart 27/46/?/70
+# shiba (sum 59, or 61 if colored eyes instead of empty, maybe can add colors and get to 64):
+shiba = [
+    [1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+    [1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1],
+    [0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0],
+    [0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0],
+    [0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0],
+    [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+    [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1],
+    [0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+    [0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0],
+    [0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0],
+]
+
+def print_2d_shape(shape):
+    for row in shape:
+        for cell in row:
+            print("⬛" if cell == 0 else "⬜" , end="")
+        print()
+
+print_2d_shape(shiba)
+exit()
+
 # Values from 0 to 1
 fun_meter = 1.0 # the more varaity of shapes the more fun it is (many same shapes is boring)
 _2d_difficulty_meter = 1.0 # the harder to assembly the shape 8x8 the harder it is
