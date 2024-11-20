@@ -3,68 +3,7 @@ import numpy as np
 from _1_create_tetris_parts import merge_cubes,convert_parts_2d,connection_cords,point_cords,at
 from _2_verify_second_shape import inspect_parts,solve_2d
 from _5_create_meshes import create_meshes
-
-# possible shapes:
-# cube
-# pyramid
-# stairs (Penrose stairs?)
-# 2d flat shapes (anything):
-#   cat
-#   fish
-#   bird
-#   Heart
-#   star
-#   diamond
-#   house
-#   key
-#   shiba?
-
-# 4x4x4 cube (sum 64)
-# 3x3x3 cube (sum 27)
-# pyramid 4/5 layers (sum 35/84)
-# heart 27/46/63/70
-heart1 = np.array([
-    [0, 1, 1, 0, 1, 1, 0],
-    [1, 1, 1, 1, 1, 1, 1],
-    [1, 1, 1, 1, 1, 1, 1],
-    [0, 1, 1, 1, 1, 1, 0],
-    [0, 0, 1, 1, 1, 0, 0],
-    [0, 0, 0, 1, 0, 0, 0],
-])
-heart3 = np.array([
-    [0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0],
-    [1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
-    [0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-    [0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0],
-    [0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-])
-# shiba (sum 59, or 61 if colored eyes instead of empty, maybe can add colors and get to 64):
-shiba = np.array([
-    [1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-    [1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1],
-    [0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0],
-    [0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0],
-    [0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0],
-    [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
-    [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1],
-    [0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-    [0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0],
-    [0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0],
-])
-
-def print_2d_shape(shape):
-    for row in shape:
-        for cell in row:
-            print("⬛" if cell == 0 else "⬜" , end="")
-        print()
-
-# print_2d_shape(heart1)
-# exit()
+from shapes import *
 
 # Values from 0 to 1
 fun_meter = 1.0 # the more varaity of shapes the more fun it is (many same shapes is boring)
@@ -114,7 +53,7 @@ def attempt_connect(direction, connections, is_checked, cube_pos, part_length, p
 best_parts = None
 best_sorted = None
 best_reward = 0
-cl = 3 # cube length: 4 -> 4x4x4
+cl = 3 # cube length: 4 -> 4x4x4 (need to edit this value in other file too)
 for _ in range(1000):
     connections = np.full((3, cl-1, cl, cl), False)
 
@@ -152,7 +91,6 @@ for _ in range(1000):
         best_reward = reward
 
 print("best reward: " + str(best_reward))
-# if solve_2d(np.ones((8, 8)), best_sorted, [0,0]):
 if solve_2d(heart1, best_sorted, [0,0]):
     print("and its solvable!!")
 else:
