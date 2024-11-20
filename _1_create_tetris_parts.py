@@ -7,30 +7,29 @@ def at(obj, index_arr):
         obj = obj[key]
     return obj
 
+cl = 3
+
 point_cords = {
-    'up':    lambda x,y,z: None if z >= 3 else [x, y, z+1],
-    'down':  lambda x,y,z: None if z <= 0 else [x, y, z-1],
-    'front': lambda x,y,z: None if x >= 3 else [x+1, y, z],
-    'back':  lambda x,y,z: None if x <= 0 else [x-1, y, z],
-    'right': lambda x,y,z: None if y >= 3 else [x, y+1, z],
-    'left':  lambda x,y,z: None if y <= 0 else [x, y-1, z],
+    'up':    lambda x,y,z: None if z >= cl-1 else [x, y, z+1],
+    'down':  lambda x,y,z: None if z <= 0    else [x, y, z-1],
+    'front': lambda x,y,z: None if x >= cl-1 else [x+1, y, z],
+    'back':  lambda x,y,z: None if x <= 0    else [x-1, y, z],
+    'right': lambda x,y,z: None if y >= cl-1 else [x, y+1, z],
+    'left':  lambda x,y,z: None if y <= 0    else [x, y-1, z],
 }
 
 # connections_x = 3d array of 3 x planes, 4 rows, 4 connection (val >= 0 yes connected otherwise not connected)
 # connections_y and connections_z are the same.
 connection_cords = {
-    'up':    lambda x,y,z: None if z >= 3 else [2, z, x, y],
-    'down':  lambda x,y,z: None if z <= 0 else [2, z-1, x, y],
-    'front': lambda x,y,z: None if x >= 3 else [0, x, y, z],
-    'back':  lambda x,y,z: None if x <= 0 else [0, x-1, y, z],
-    'right': lambda x,y,z: None if y >= 3 else [1, y, z, x],
-    'left':  lambda x,y,z: None if y <= 0 else [1, y-1, z, x],
+    'up':    lambda x,y,z: None if z >= cl-1 else [2, z, x, y],
+    'down':  lambda x,y,z: None if z <= 0    else [2, z-1, x, y],
+    'front': lambda x,y,z: None if x >= cl-1 else [0, x, y, z],
+    'back':  lambda x,y,z: None if x <= 0    else [0, x-1, y, z],
+    'right': lambda x,y,z: None if y >= cl-1 else [1, y, z, x],
+    'left':  lambda x,y,z: None if y <= 0    else [1, y-1, z, x],
 }
 
-# TODO accept 3d parts as well and then not only i can make square but also other shapes like a pyramid, castle, or other shape that will hold itself...
-
-
-# Separate 4x4x4 into many 3d parts
+# Separate 3d cube into many 3d parts
 
 def merge_next_cubes(connections, is_checked, part, part_pos, cube_pos, part_axis):
     if not is_checked[cube_pos[0]][cube_pos[1]][cube_pos[2]]:
@@ -93,16 +92,16 @@ def merge_next_cubes(connections, is_checked, part, part_pos, cube_pos, part_axi
 
     return [part, part_axis]
 
-# connections 3x3x4x4 arrays
+# connections arrays ([axis][cl-1][cl][cl])
 def merge_cubes(connections):
-    is_checked = np.full((4, 4, 4), False)
+    is_checked = np.full((cl, cl, cl), False)
 
     parts = []
-    for x in range(4):
-        for y in range(4):
-            for z in range(4):
+    for x in range(cl):
+        for y in range(cl):
+            for z in range(cl):
                 if not is_checked[x][y][z]:
-                    new_part, _ = merge_next_cubes(connections, is_checked, np.full((7, 7, 7), False), [3,3,3], [x,y,z], [])
+                    new_part, _ = merge_next_cubes(connections, is_checked, np.full(((cl-1)*2+1, (cl-1)*2+1, (cl-1)*2+1), False), [cl-1,cl-1,cl-1], [x,y,z], [])
 
                     # clean the part
                     repeat = True

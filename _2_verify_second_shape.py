@@ -36,18 +36,22 @@ def compare_parts(part1, part2):
     return False
 
 # TODO use more numpy
-def solve_8x8(plane, parts, pos):
+def solve_2d(plane, parts, pos):
+    next_pos_valid = False
     next_pos = pos.copy()
-    next_pos[0] += 1
-    if next_pos[0] >= plane.shape[0]:
-        next_pos[0] = 0
-        next_pos[1] += 1
-    if next_pos[1] >= plane.shape[1]:
-        return True
+    while not next_pos_valid:
+        next_pos[0] += 1
+        if next_pos[0] >= plane.shape[0]:
+            next_pos[0] = 0
+            next_pos[1] += 1
+        if next_pos[1] >= plane.shape[1]:
+            return True
+        if plane[next_pos[0]][next_pos[1]] == 1:
+            next_pos_valid = True
 
-    if plane[pos[0]][pos[1]] == 1: # current pos already filled
+    if plane[pos[0]][pos[1]] == 3: # if current pos already solved
         # solve next
-        return solve_8x8(plane, parts, next_pos)
+        return solve_2d(plane, parts, next_pos)
     else:
         for part in parts:
             # remove the part from parts
@@ -66,10 +70,15 @@ def solve_8x8(plane, parts, pos):
                             shifted_pos = np.add(pos, [-x_shift, -y_shift])
                             # if piece in plane bounds
                             if shifted_pos[0] >= 0 and shifted_pos[1] >= 0 and shifted_pos[0] + part_shape.shape[0] <= plane.shape[0] and shifted_pos[1] + part_shape.shape[1] <= plane.shape[1]:
-                                combo_result = part_shape + plane[shifted_pos[0] : shifted_pos[0] + part_shape.shape[0], shifted_pos[1] : shifted_pos[1] + part_shape.shape[1]]
-                                if np.max(combo_result) < 2:
-                                    plane[shifted_pos[0] : shifted_pos[0] + part_shape.shape[0], shifted_pos[1] : shifted_pos[1] + part_shape.shape[1]] += part_shape
-                                    succeeded = solve_8x8(plane, parts, next_pos)
+                                combo_result = 2*part_shape + plane[shifted_pos[0] : shifted_pos[0] + part_shape.shape[0], shifted_pos[1] : shifted_pos[1] + part_shape.shape[1]]
+                                # 0: not allowed to place
+                                # 1: allowed to place
+                                # 2: putted part on not allowed place
+                                # 3: putted on allowed place
+                                # 5: putted on already occupied place
+                                if not np.any(np.isin([2,5], combo_result)): # if no bad parts after combining
+                                    plane[shifted_pos[0] : shifted_pos[0] + part_shape.shape[0], shifted_pos[1] : shifted_pos[1] + part_shape.shape[1]] += 2*part_shape
+                                    succeeded = solve_2d(plane, parts, next_pos)
                                     if succeeded:
                                         # put back the part and quit
                                         part['repeats'] += 1
@@ -77,7 +86,7 @@ def solve_8x8(plane, parts, pos):
                                             parts.append(part)
                                         return True
                                     else:
-                                        plane[shifted_pos[0] : shifted_pos[0] + part_shape.shape[0], shifted_pos[1] : shifted_pos[1] + part_shape.shape[1]] -= part_shape
+                                        plane[shifted_pos[0] : shifted_pos[0] + part_shape.shape[0], shifted_pos[1] : shifted_pos[1] + part_shape.shape[1]] -= 2*part_shape
                     part_shape = np.rot90(part_shape)
                 part_shape = part_shape[::-1, :]
 

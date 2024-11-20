@@ -21,4 +21,4 @@ def create_meshes(tetris_parts):
     # Output the result
 
     scene = trimesh.Scene(mesh_parts)
-    scene.export('4x4x4_cube.obj')
+    scene.export('res.obj')
