@@ -1,8 +1,11 @@
 import numpy as np
 
+# TODO next combo 3x3x3 cube + 8x3 square + chair (27)
+
 # possible shapes:
 # cube
 # pyramid
+# chair
 # stairs (Penrose stairs?)
 # 2d flat shapes (anything):
 #   cat
