@@ -1,7 +1,7 @@
 import numpy as np
 
 from _1_create_tetris_parts import merge_cubes,convert_parts_2d,connection_cords,point_cords,at
-from _2_verify_second_shape import inspect_parts,solve_2d
+from _2_verify_second_shape import inspect_parts,solve_2d,solve_3d
 from _5_create_meshes import create_meshes
 from shapes import *
 
@@ -54,7 +54,11 @@ best_parts = None
 best_sorted = None
 best_reward = 0
 cl = 3 # cube length: 4 -> 4x4x4 (need to edit this value in other file too)
-for _ in range(1000):
+
+repeats = 10
+min_reward = 10
+while repeats > 0 or best_reward < min_reward:
+    repeats += -1
     connections = np.full((3, cl-1, cl, cl), False)
 
     reward = 0
@@ -91,8 +95,22 @@ for _ in range(1000):
         best_reward = reward
 
 print("best reward: " + str(best_reward))
+
 if solve_2d(heart1, best_sorted, [0,0]):
     print("and its solvable!!")
 else:
     print("nah")
+    exit()
+
+for part in best_sorted: # convert best_sorted into 3d shapes
+    part['matrix'] = np.expand_dims(part['matrix'], axis=2)
+if solve_3d(chair, best_sorted, [0,0,0]):
+    print("and its solvable for second shape too!!")
+else:
+    print("nah x2")
+    exit()
+
 create_meshes(best_parts)
+
+
+# output="$(python _0_create_connection_manual.py)"; while echo "$output" | grep -q nah; do echo "$output"; sleep 0.2; output="$(python _0_create_connection_manual.py)"; done; echo "$output"

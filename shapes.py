@@ -1,6 +1,6 @@
 import numpy as np
 
-# TODO next combo 3x3x3 cube + 8x3 square + chair (27)
+# TODO next combo 3x3x3 cube + heart + chair (27)
 
 # possible shapes:
 # cube
@@ -55,5 +55,19 @@ shiba = np.array([
     [0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0],
     [0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0],
 ])
+
+chair = np.array([[
+    [1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1],
+],[
+    [1, 1, 0, 0, 0],
+    [1, 1, 0, 0, 0],
+    [1, 1, 0, 0, 0],
+],[
+    [1, 1, 0, 0, 0],
+    [1, 1, 0, 0, 0],
+    [1, 1, 0, 0, 0],
+]])
 
 square8 = np.ones((8, 8))
