@@ -36,7 +36,7 @@ def compare_parts(part1, part2):
     return False
 
 # TODO use more numpy
-def solve_2d(plane, parts, pos):
+def solve_2d(plane, parts, pos, colorful_plane=None):
     next_pos_valid = False
     next_pos = pos.copy()
     while not next_pos_valid:
@@ -51,7 +51,7 @@ def solve_2d(plane, parts, pos):
 
     if plane[pos[0]][pos[1]] == 3: # if current pos already solved
         # solve next
-        return solve_2d(plane, parts, next_pos)
+        return solve_2d(plane, parts, next_pos, colorful_plane)
     else:
         for part in parts:
             # remove the part from parts
@@ -78,12 +78,16 @@ def solve_2d(plane, parts, pos):
                                 # 5: putted on already occupied place
                                 if not np.any(np.isin([2,5], combo_result)): # if no bad parts after combining
                                     plane[shifted_pos[0] : shifted_pos[0] + part_shape.shape[0], shifted_pos[1] : shifted_pos[1] + part_shape.shape[1]] += 2*part_shape
-                                    succeeded = solve_2d(plane, parts, next_pos)
+                                    succeeded = solve_2d(plane, parts, next_pos, colorful_plane)
                                     if succeeded:
                                         # put back the part and quit
                                         part['repeats'] += 1
                                         if part['repeats'] == 1:
                                             parts.append(part)
+                                        # print to the solution and quit
+                                        if colorful_plane is not None:
+                                            last_index = np.max(colorful_plane)
+                                            colorful_plane[shifted_pos[0] : shifted_pos[0] + part_shape.shape[0], shifted_pos[1] : shifted_pos[1] + part_shape.shape[1]] += (last_index+1)*part_shape
                                         return True
                                     else:
                                         plane[shifted_pos[0] : shifted_pos[0] + part_shape.shape[0], shifted_pos[1] : shifted_pos[1] + part_shape.shape[1]] -= 2*part_shape
