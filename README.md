@@ -1,6 +1,7 @@
 # Cube Puzzle
-This program creates tetrist puzzles such as:
-![check ./product/intro.png](./product/intro.png)
+This program creates tetrist puzzles such as:  
+
+![check ./product/intro.png](product/intro.png)
 
 I tried to train AI to generate interesting shapes, but generating them myself was easier than making AI to do it for me.
 
