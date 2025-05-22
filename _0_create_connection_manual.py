@@ -5,10 +5,10 @@ from _2_verify_second_shape import inspect_parts,solve_2d,solve_3d
 from _5_create_meshes import create_meshes
 from shapes import *
 
-# Values from 0 to 1
-fun_meter = 1.0 # the more varaity of shapes the more fun it is (many same shapes is boring)
-_2d_difficulty_meter = 1.0 # the harder to assembly the shape 8x8 the harder it is
-_3d_difficulty_meter = 1.0 # the harder to assembly the shape 4x4x4 the harder it is
+# # Values from 0 to 1
+# fun_meter = 1.0 # the more varaity of shapes the more fun it is (many same shapes is boring)
+# _2d_difficulty_meter = 1.0 # the harder to assembly the shape 8x8 the harder it is
+# _3d_difficulty_meter = 1.0 # the harder to assembly the shape 4x4x4 the harder it is
 
 class IntegerWrapper:
     def __init__(self, value):
@@ -96,21 +96,24 @@ while repeats > 0 or best_reward < min_reward:
 
 print("best reward: " + str(best_reward))
 
+# test for first shape (shapes are imported from shapes.py)
 if solve_2d(heart1, best_sorted, [0,0]):
-    print("and its solvable!!")
+    print("and its solvable for the first shape!!")
 else:
-    print("nah")
+    print("not solvable for the first share, try to run again.")
     exit()
 
+# test for second shape (shapes are imported from shapes.py)
 for part in best_sorted: # convert best_sorted into 3d shapes
     part['matrix'] = np.expand_dims(part['matrix'], axis=2)
 if solve_3d(chair, best_sorted, [0,0,0]):
     print("and its solvable for second shape too!!")
 else:
-    print("nah x2")
+    print("not solvable for the second shape, try to run again.")
     exit()
 
 create_meshes(best_parts)
+print("created final result at res.obj")
 
-
-# output="$(python _0_create_connection_manual.py)"; while echo "$output" | grep -q nah; do echo "$output"; sleep 0.2; output="$(python _0_create_connection_manual.py)"; done; echo "$output"
+# to run it from bash until it generates succesfully:
+# output="$(python _0_create_connection_manual.py)"; while echo "$output" | grep -q "not solvable"; do echo "$output"; sleep 0.2; output="$(python _0_create_connection_manual.py)"; done; echo "$output"
